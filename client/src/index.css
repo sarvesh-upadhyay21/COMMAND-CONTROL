@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Grafana-inspired Dark Theme Default */
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Backgrounds */
+    --background: 230 15% 8%;   /* #111217 */
+    --foreground: 210 40% 98%;  /* #f8f9fa */
+    
+    /* Panels / Cards */
+    --card: 214 13% 11%;        /* #181b1f */
+    --card-foreground: 210 40% 98%;
+    --card-border: 200 9% 19%;  /* #2c3235 */
+    
+    /* Borders */
+    --border: 200 9% 19%;
+    --input: 200 9% 19%;
+    --ring: 217 90% 61%;
+
+    /* Semantic Colors - Neon Accents */
+    --primary: 142 71% 45%;     /* Green - Live/Success */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 217 90% 61%;   /* Blue - Assigned/Info */
+    --secondary-foreground: 210 40% 98%;
+    
+    --accent: 48 96% 53%;       /* Yellow - Upcoming/Warning */
+    --accent-foreground: 230 15% 8%;
+
+    --destructive: 349 77% 53%; /* Red - Critical */
+    --destructive-foreground: 210 40% 98%;
+
+    --muted: 215 14% 20%;
+    --muted-foreground: 215 20% 65%;
+
+    --popover: 214 13% 11%;
+    --popover-foreground: 210 40% 98%;
+    --popover-border: 200 9% 19%;
+
+    /* Chart Colors */
+    --chart-1: 142 71% 45%; /* Green */
+    --chart-2: 217 90% 61%; /* Blue */
+    --chart-3: 48 96% 53%;  /* Yellow */
+    --chart-4: 280 80% 60%; /* Purple */
+    --chart-5: 349 77% 53%; /* Red */
+
+    --radius: 0.25rem; /* Slightly sharper corners for dashboard feel */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground overflow-x-hidden;
+    /* Force dark mode appearance */
+    color-scheme: dark;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+  
+  /* Custom Scrollbar for dashboard tables */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+@layer utilities {
+  .font-mono-num {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum", "zero";
+  }
+
+  .panel-glow-green {
+    box-shadow: 0 0 15px -3px hsla(142, 71%, 45%, 0.3), 0 0 6px -2px hsla(142, 71%, 45%, 0.2);
+    border-color: hsla(142, 71%, 45%, 0.5);
+  }
+  
+  .panel-glow-yellow {
+    box-shadow: 0 0 15px -3px hsla(48, 96%, 53%, 0.2);
+    border-color: hsla(48, 96%, 53%, 0.3);
+  }
+
+  .text-shadow-glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+}

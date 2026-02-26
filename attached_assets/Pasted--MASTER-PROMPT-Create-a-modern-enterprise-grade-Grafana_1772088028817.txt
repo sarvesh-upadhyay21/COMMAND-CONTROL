@@ -1,0 +1,278 @@
+✅ MASTER PROMPT
+
+Create a modern, enterprise-grade, Grafana-style real-time dashboard UI design for a Video Conferencing Management Portal specifically for Delhi Headquarters (HQ Only) display on a large LED screen.
+
+🎯 Objective:
+
+The dashboard will be displayed on a large LED screen inside Delhi Headquarters and should show real-time VC (Video Conference) information in a clean, modern, highly readable format. It must be user-friendly, auto-refresh enabled, and optimized for 1080p/4K large screens.
+
+🧱 Layout Structure (Full Width Responsive Grid)
+🔷 Top Header Bar
+
+Title: Delhi Headquarters – Live VC Dashboard
+
+Current Date & Time (real-time clock)
+
+Total VCs Today (Big KPI Card)
+
+Total Ongoing VCs (Highlight in Green)
+
+Total Upcoming VCs
+
+Auto-refresh indicator (every 30 sec)
+
+Use Grafana-style dark theme (charcoal background, neon accent colors).
+
+🔶 Row 1 – KPI Cards (Large Stat Cards)
+
+Display 4–6 large animated metric cards:
+
+🟢 Total VC Held Today (Delhi HQ Only)
+
+🔵 Total VC Assigned Today
+
+🟡 Currently Live VC Count
+
+🔴 Completed VC Count
+
+🟣 Average VC Duration
+
+⚪ Total Participants Today
+
+Cards should have:
+
+Gradient background
+
+Big bold numbers
+
+Small subtext
+
+Subtle animation
+
+Icon per card
+
+🔥 Row 2 – LIVE VC Spotlight Section (Main Focus Area)
+
+Center of screen must highlight:
+
+🎥 CURRENTLY RUNNING VC (if any)
+
+Large Card showing:
+
+VC Title / Purpose
+
+Chaired By (Name + Designation)
+
+Studio Name (Location)
+
+Start Time – End Time
+
+Remaining Time (Countdown Timer)
+
+Total Participants Connected
+
+Status Badge (LIVE – Blinking Red/Green)
+
+Host Studio & Remote Studios
+
+Bharat VC Link (masked partially for security)
+
+This card must be visually dominant and glowing border animation.
+
+If no VC is running:
+Show "No VC Live Currently" with calm animation.
+
+📅 Row 3 – Today’s Assigned VC List (Delhi HQ Only)
+
+Display table/grid:
+
+Columns:
+
+Serial No.
+
+VC Title
+
+Assigned To (Officer Name)
+
+Studio Location
+
+Start Time
+
+End Time
+
+Duration
+
+Participants Count
+
+Status (Upcoming / Live / Completed)
+
+Countdown (for upcoming)
+
+If 10 VCs assigned:
+Show clearly:
+“10 VCs Assigned Today”
+List all 10 with officer names.
+
+⏭ Highlight Next Upcoming VC
+
+Special highlighted box:
+
+Label: "Next VC Starting Soon"
+
+Show:
+
+Officer Name
+
+Purpose
+
+Start Time
+
+Time Remaining (Live countdown)
+
+Yellow/Orange animated border.
+
+📊 Row 4 – Analytics Section (Grafana Style Charts)
+
+Add:
+
+Bar Chart – VC Distribution by Studio
+
+Pie Chart – Status Distribution (Live / Completed / Upcoming)
+
+Timeline Chart – VC Schedule for Today
+
+Line Graph – VC Trend (Last 7 Days – Delhi HQ Only)
+
+Dark theme with neon accents (green, blue, purple).
+
+📢 Bottom Ticker / Side Panel
+
+Add scrolling ticker (like news bar):
+
+Running VC details
+
+Upcoming VC alerts
+
+Recently completed VC summary
+
+Or side panel showing:
+
+Full details of selected VC
+
+Studio contact details
+
+Coordinator Name
+
+IP Phone
+
+MCU Alias
+
+VC Password masked
+
+🎨 Design Requirements
+
+Theme: Grafana-inspired dark UI
+
+Background: Dark charcoal (#0f172a style)
+
+Accent colors:
+
+Green for Live
+
+Blue for Assigned
+
+Yellow for Upcoming
+
+Red for Critical / Ending Soon
+
+Use modern fonts (Inter / Roboto)
+
+Smooth transitions
+
+Card-based layout
+
+Clean spacing
+
+Big typography (LED readable from distance)
+
+Fully responsive
+
+Auto-refresh every 30 seconds
+
+No clutter
+
+Data filtering: Delhi HQ only
+
+⚙ Functional Requirements
+
+Real-time API integration
+
+Auto-refresh
+
+Countdown timers
+
+Live status detection (based on current time)
+
+Filter strictly for Delhi Headquarters VCs only
+
+Highlight:
+
+Currently running VC
+
+Next upcoming VC
+
+If VC ending in next 5 minutes → show alert badge
+
+🖥 Screen Optimization
+
+Designed for 55-inch LED screen
+
+1920x1080 minimum resolution
+
+Large readable text
+
+High contrast
+
+Auto full-screen mode
+
+🔐 Security
+
+Hide sensitive data (show partially masked VC link/password)
+
+No edit controls (view-only mode)
+
+Role-based access (HQ display mode)
+
+🎯 Tech Suggestion (Optional Section in Prompt)
+
+Frontend:
+
+React / Angular
+
+Chart.js / ECharts
+
+Tailwind CSS
+
+WebSocket for live updates
+
+Backend:
+
+.NET Core API
+
+SQL Server
+
+Real-time SignalR updates
+
+📌 Expected Outcome
+
+A professional, real-time, modern Grafana-style dashboard UI for Delhi Headquarters VC monitoring that:
+
+✔ Shows total VCs today
+✔ Shows who is assigned which VC
+✔ Shows where it is happening
+✔ Shows start & end time
+✔ Shows how many people are connected
+✔ Highlights live VC
+✔ Highlights next VC
+✔ Looks premium & government-ready
+✔ Perfect for LED wall display
