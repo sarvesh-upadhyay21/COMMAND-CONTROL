@@ -509,7 +509,7 @@ export default function Dashboard() {
           {/* Analytics (Span 1) */}
           <div className="col-span-1 grid gap-6 min-h-0">
             {/* Chart */}
-            <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-4">Scheduled VC Hours</span> 
+            <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-4">Scheduled VC Hours</span>
             <div className="flex-1 min-h-[120px]">
               <HourlyDistributionChart vcs={vcs || []} />
             </div>
