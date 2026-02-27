@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from "react";
+import { Vc } from "@shared/schema";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { AlertCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, Legend
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis, YAxis
 } from "recharts";
-import { Vc, DashboardStats } from "@shared/schema";
-import { AlertCircle, Clock, Video, Users, CheckCircle2, Calendar } from "lucide-react";
 
 // --- Clock Component ---
 export function RealTimeClock() {
@@ -100,8 +108,8 @@ export function StatusPieChart({ vcs }: { vcs: Vc[] }) {
           ))}
         </Pie>
         <Tooltip
-          contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))',color: '#E6EDF3',backdropFilter: 'blur(6px)' }}
-          itemStyle={{ color: '#E6EDF3',backdropFilter: 'blur(6px)' }}
+          contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', color: '#E6EDF3', backdropFilter: 'blur(6px)' }}
+          itemStyle={{ color: '#E6EDF3', backdropFilter: 'blur(6px)' }}
         />
         <Legend verticalAlign="bottom" height={36} iconType="circle" />
       </PieChart>
@@ -134,10 +142,32 @@ export function HourlyDistributionChart({ vcs }: { vcs: Vc[] }) {
       <BarChart data={filteredData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
         <XAxis dataKey="hour" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+        <YAxis
+          stroke="hsl(var(--muted-foreground))"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+          allowDecimals={false}
+          tickFormatter={(value) => `${value} VCs`}
+          label={{
+            value: "No. of Scheduled VCs",
+            angle: -90,
+            position: "insideLeft",
+            fill: "hsl(var(--muted-foreground))",
+            fontSize: 12,
+            offset: 10
+          }}
+        />
         <Tooltip
-          cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }}
-          contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', color: '#fff', borderRadius: '4px' }}
+          cursor={{ fill: "hsl(var(--muted))", opacity: 0.2 }}
+          contentStyle={{
+            backgroundColor: "#0f172a",
+            borderColor: "#1e293b",
+            color: "#fff",
+            borderRadius: "8px"
+          }}
+          labelFormatter={(label) => `Time Slot: ${label}`}
+          formatter={(value: number) => [`${value} VC(s)`, "Scheduled"]}
         />
         <Bar dataKey="count" fill="hsl(var(--secondary))" radius={[2, 2, 0, 0]} name="Scheduled VCs" />
       </BarChart>
@@ -157,15 +187,13 @@ function EmptyChart({ message }: { message: string }) {
 // --- Ticker ---
 export function NewsTicker() {
   const items = [
-    "BHARATVC COMMAND CENTER STATUS: ALL SYSTEMS OPERATIONAL",
-    "PMO DIGITAL INDIA REVIEW VC CURRENTLY MONITORED BY NIC HQ",
-    "NEXT SCHEDULED MAINTENANCE WINDOW: SATURDAY 02:00 AM IST (NIC NOC)",
-    "SECURITY ADVISORY: DO NOT SHARE MCU ALIAS OR PASSWORD PUBLICLY",
-    "AUDIO PROTOCOL: PLEASE KEEP MICROPHONES MUTED WHEN NOT SPEAKING",
-    "NETWORK HEALTH: LATENCY STABLE • JITTER NORMAL • NO PACKET LOSS",
-    "SUPPORT DESK (NIC NOC): 1800-111-2222 | noc-support@nic.in",
-    "ACTIVE SESSIONS ARE BEING RECORDED UNDER GOVT VC POLICY",
-    "DELHI HQ CORE NETWORK UPTIME: 99.98% LAST 24 HOURS"
+    "General guidelines for participants during Videoconferencing",
+    "Please be attentive and maintain right posture as others are watching you.",
+    "Do not move / hold the Microphone.Switch on Microphone only when you want to speak.",
+    "Do not put any paper / articles close to Microphone.",
+    "Avoid using mobile phones or keep in silent mode.",
+    "Avoid bringing eatables, water bottle etc.as they obstruct camera view.",
+    "If you have any presentation, get it tested well in advance.",
   ];
 
   return (
@@ -176,7 +204,7 @@ export function NewsTicker() {
       <div className="flex items-center px-4 shrink-0 bg-emerald-500/15 border-r border-primary/20 h-full z-20">
         <span className="text-emerald-400 font-bold text-xs tracking-widest flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          UPDATES
+          GUIDELINES
         </span>
       </div>
 
@@ -186,7 +214,7 @@ export function NewsTicker() {
         transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
       >
         {[...items, ...items, ...items].map((item, i) => (
-          <span key={i} className="text-sm font-mono tracking-wide text-[#B8C7D9]">
+          <span key={i} className="text-sm font-mono tracking-wide uppercase text-[#B8C7D9]">
             {item}
             <span className="text-border">|</span>
           </span>

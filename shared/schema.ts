@@ -3,24 +3,22 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const vcs = pgTable("vcs", {
-  id: serial("id").primaryKey(),
+  vcid: serial("vcid").primaryKey(),
   title: text("title").notNull(),
-  chairedBy: text("chaired_by").notNull(),
-  studioName: text("studio_name").notNull(), // Delhi HQ etc
+  chairedBy: text("chaired_by").notNull(), 
   hostStudio: text("host_studio").notNull(),
-  remoteStudios: text("remote_studios").array(),
+  vcAssigned: text("vc_assigned").notNull(),
+  destStudios: text("dest_studios").array(),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
   participantsCount: integer("participants_count").notNull(),
-  status: varchar("status", { enum: ["upcoming", "live", "completed"] }).notNull(),
-  bharatVcLink: text("bharat_vc_link"),
+  status: varchar("status", { enum: ["upcoming", "live", "completed"] }).notNull(), 
   coordinatorName: text("coordinator_name"),
-  ipPhone: text("ip_phone"),
-  mcuAlias: text("mcu_alias"),
-  password: text("password"),
+  ipPhone: text("ip_phone"),  
+  location: text("location").notNull(),
 });
 
-export const insertVcSchema = createInsertSchema(vcs).omit({ id: true });
+export const insertVcSchema = createInsertSchema(vcs).omit({ vcid: true });
 export type InsertVc = z.infer<typeof insertVcSchema>;
 export type Vc = typeof vcs.$inferSelect;
 

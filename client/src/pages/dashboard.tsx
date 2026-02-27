@@ -2,8 +2,7 @@ import {
   HourlyDistributionChart,
   KpiCard,
   NewsTicker,
-  RealTimeClock,
-  maskData
+  RealTimeClock
 } from "@/components/dashboard-widgets";
 import { useStats, useVcs } from "@/hooks/use-dashboard";
 import { Vc } from "@shared/schema";
@@ -17,15 +16,16 @@ import {
   Clock,
   Loader2,
   MonitorPlay,
-  ShieldAlert,
   Users,
   Video
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function Dashboard() {
   const { data: vcs, isLoading: isLoadingVcs, isError: isErrorVcs } = useVcs();
   const { data: stats, isLoading: isLoadingStats } = useStats();
+  const tableScrollRef = useRef<HTMLDivElement | null>(null);
+
   // ================= REALTIME STATUS ENGINE =================
   const getRealtimeStatus = (vc: Vc) => {
     const now = new Date();
@@ -36,19 +36,48 @@ export default function Dashboard() {
     if (now < start) return "upcoming";
     return "completed";
   };
+
   const liveVcs: Vc[] = useMemo(
     () => (vcs?.filter(vc => getRealtimeStatus(vc) === "live") ?? []) as Vc[],
     [vcs]
-  ); const upcomingVcs = useMemo(() => {
-    const list = vcs?.filter(vc => vc.status === "upcoming") || [];
-    return list.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  );
+
+  const upcomingVcs: Vc[] = useMemo(() => {
+    const list =
+      vcs?.filter(vc => getRealtimeStatus(vc) === "upcoming") ?? [];
+
+    return list.sort(
+      (a, b) =>
+        new Date(a.startTime).getTime() -
+        new Date(b.startTime).getTime()
+    );
   }, [vcs]);
 
   const todayVcs = useMemo(() => {
     if (!vcs) return [];
-    // Just sort all by time for the table
-    return [...vcs].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+    const statusPriority: Record<string, number> = {
+      live: 0,
+      upcoming: 1,
+      completed: 2,
+    };
+
+    return [...vcs].sort((a, b) => {
+      const statusA = getRealtimeStatus(a);
+      const statusB = getRealtimeStatus(b);
+
+      const priorityDiff =
+        statusPriority[statusA] - statusPriority[statusB];
+
+      if (priorityDiff !== 0) return priorityDiff;
+
+      return (
+        new Date(a.startTime).getTime() -
+        new Date(b.startTime).getTime()
+      );
+    });
   }, [vcs]);
+
   const [liveIndex, setLiveIndex] = useState(0);
 
   useEffect(() => {
@@ -72,6 +101,45 @@ export default function Dashboard() {
 
     return () => clearInterval(interval);
   }, [upcomingVcs]);
+
+  useEffect(() => {
+    const container = tableScrollRef.current;
+    if (!container) return;
+
+    // ✅ Scroll only if content overflows
+    if (container.scrollHeight <= container.clientHeight) return;
+
+    let direction: "down" | "up" = "down";
+    const scrollSpeed = 1.25; // ✅ NIC recommended smooth speed
+    let animationFrame: number;
+
+    const autoScroll = () => {
+      if (!container) return;
+
+      if (direction === "down") {
+        container.scrollTop += scrollSpeed;
+
+        if (
+          container.scrollTop + container.clientHeight >=
+          container.scrollHeight
+        ) {
+          direction = "up";
+        }
+      } else {
+        container.scrollTop -= scrollSpeed;
+
+        if (container.scrollTop <= 0) {
+          direction = "down";
+        }
+      }
+
+      animationFrame = requestAnimationFrame(autoScroll);
+    };
+
+    animationFrame = requestAnimationFrame(autoScroll);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [todayVcs]);
 
   // ✅ ONLY THIS ONE
   const primaryLiveVc: Vc | undefined = liveVcs[liveIndex];
@@ -109,17 +177,36 @@ export default function Dashboard() {
     <div className="h-screen w-full bg-background flex flex-col overflow-hidden selection:bg-primary/30 text-foreground">
 
       {/* --- TOP HEADER --- */}
-      <header className="h-20 shrink-0 border-b border-border bg-card/50 backdrop-blur-md flex items-center justify-between px-6 z-20">
+      <header className="h-20 shrink-0 border-b border-border bg-card/50 backdrop-blur-md grid grid-cols-3 items-center px-6 z-20">
+
+        {/* LEFT: Brand */}
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
             <MonitorPlay className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-widest text-white leading-none">VC<span className="text-primary">RESERVE</span></h1>
-            <p className="text-xs text-muted-foreground font-mono tracking-widest">COMMAND & CONTROL CENTER</p>
+            <h1 className="text-2xl font-bold tracking-widest text-white leading-none">
+              VC<span className="text-primary">RESERVE</span>
+            </h1>
+            <p className="text-xs text-muted-foreground font-mono tracking-widest">
+              COMMAND & CONTROL CENTER
+            </p>
           </div>
         </div>
-        <RealTimeClock />
+
+        {/* CENTER: Context */}
+        <div className="flex justify-center">
+          <div className="px-8 py-2 rounded-sm">
+            <span className="text-2xl md:text-base text-primary font-bold tracking-widest uppercase text-[#e6f1f8]">
+              Today’s VC Sessions Assigned to NIC HQ
+            </span>
+          </div>
+        </div>
+        {/* RIGHT: Clock */}
+        <div className="flex justify-end">
+          <RealTimeClock />
+        </div>
+
       </header>
 
       {/* --- MAIN CONTENT GRID --- */}
@@ -163,7 +250,7 @@ export default function Dashboard() {
               <AnimatePresence mode="wait">
                 {primaryLiveVc ? (
                   <motion.div
-                    key={`live-${primaryLiveVc.id}`}
+                    key={`live-${primaryLiveVc.vcid}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -178,10 +265,10 @@ export default function Dashboard() {
 
                         <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
                           <span className="px-2 py-1 rounded bg-background border border-border">
-                            ID: {primaryLiveVc.id.toString().padStart(6, "0")}
+                            VCID: {primaryLiveVc.vcid}
                           </span>
 
-                          <span className="px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20">
+                          <span className="px-2 py-1 rounded bg-prmary/10 text-primary border border-primary/20">
                             {format(new Date(primaryLiveVc.startTime), "HH:mm")} -{" "}
                             {format(new Date(primaryLiveVc.endTime), "HH:mm")}
                           </span>
@@ -208,22 +295,30 @@ export default function Dashboard() {
 
                       <div className="bg-background rounded-lg p-3 border border-border">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                          Remote Count
+                          Destination Studios
                         </p>
                         <p className="font-mono text-sm text-white">
-                          {primaryLiveVc.remoteStudios?.length || 0} Studios
+                          {primaryLiveVc.destStudios?.length || 0} Studios
                         </p>
                       </div>
 
-                      <div className="col-span-2 bg-background rounded-lg p-3 border border-border flex items-center justify-between">
+                      <div className="bg-background rounded-lg p-3 border border-border">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                          VC Assigned
+                        </p>
+                        <p className="font-mono text-sm text-white truncate">
+                          {primaryLiveVc.vcAssigned}
+                        </p>
+                      </div>
+
+                      <div className="bg-background rounded-lg p-3 border border-border flex items-center justify-between">
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                            Secure Connection
+                            Location
                           </p>
                           <div className="flex items-center gap-2">
-                            <ShieldAlert className="w-4 h-4 text-primary" />
                             <p className="font-mono text-sm text-white tracking-widest">
-                              {maskData(primaryLiveVc.password)}
+                              {primaryLiveVc.location}
                             </p>
                           </div>
                         </div>
@@ -262,15 +357,15 @@ export default function Dashboard() {
               <AnimatePresence mode="wait">
                 {rotatingUpcomingVc ? (
                   <motion.div
-                    key={`upcoming-${rotatingUpcomingVc.id}`}
+                    key={`upcoming-${rotatingUpcomingVc.vcid}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
                     className="absolute inset-0 p-5 flex flex-col justify-center"
                   >
-                    <div className="text-4xl font-mono-num font-bold text-accent mb-2">
-                      {format(new Date(rotatingUpcomingVc.startTime), "HH:mm")}
+                    <div className="text-3xl font-mono-num font-bold text-accent mb-2">
+                      VCID:  {rotatingUpcomingVc.vcid} ({format(new Date(rotatingUpcomingVc.startTime), "HH:mm")} - {format(new Date(rotatingUpcomingVc.endTime), "HH:mm")})
                     </div>
 
                     <h3 className="text-xl font-semibold text-white mb-4 line-clamp-2">
@@ -278,17 +373,24 @@ export default function Dashboard() {
                     </h3>
 
                     <div className="space-y-2 text-sm text-muted-foreground font-mono">
+
+
                       <div className="flex justify-between border-b border-border/50 pb-2">
-                        <span>Host:</span>
+                        <span>Chaired By:</span>
+                        <span className="text-white text-right max-w-[150px] truncate">
+                          {rotatingUpcomingVc.chairedBy}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-b border-border/50 pb-2">
+                        <span>Host Studio:</span>
                         <span className="text-white text-right max-w-[150px] truncate">
                           {rotatingUpcomingVc.hostStudio}
                         </span>
                       </div>
-
-                      <div className="flex justify-between pt-1">
-                        <span>Chair:</span>
-                        <span className="text-white text-right max-w-[150px] truncate">
-                          {rotatingUpcomingVc.chairedBy}
+                      <div className="flex justify-between border-b border-border/50 pb-2">
+                        <span>VC Assigned:</span>
+                        <span className="text-white text-right max-w-[350px] truncate">
+                          {rotatingUpcomingVc.vcAssigned} ({rotatingUpcomingVc.location} : {rotatingUpcomingVc.ipPhone})
                         </span>
                       </div>
                     </div>
@@ -313,57 +415,101 @@ export default function Dashboard() {
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
 
           {/* Schedule Table (Span 2) */}
-          <div className="col-span-1 lg:col-span-2 rounded-xl border bg-card relative overflow-hidden">
+          <div className="col-span-1 lg:col-span-2 rounded-xl border bg-card relative flex flex-col min-h-0">
+
+            {/* Header */}
             <div className="px-4 py-3 border-b border-border bg-background/50 flex items-center gap-2 shrink-0">
               <Calendar className="w-4 h-4 text-muted-foreground" />
-              <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Today's Schedule</span>
+              <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                Today's VC Schedule
+              </span>
             </div>
 
-            <div className="flex-1 overflow-auto p-0">
+            {/* Scroll Area */}
+            <div
+              ref={tableScrollRef}
+              className="flex-1 overflow-y-auto min-h-0 scroll-smooth"
+            >
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-muted-foreground uppercase bg-background/30 sticky top-0 z-10 backdrop-blur-sm">
                   <tr>
+                    <th className="px-4 py-3 font-medium tracking-wider">VCID</th>
                     <th className="px-4 py-3 font-medium tracking-wider">Time</th>
                     <th className="px-4 py-3 font-medium tracking-wider">Session Title</th>
                     <th className="px-4 py-3 font-medium tracking-wider">Host Studio</th>
+                    <th className="px-4 py-3 font-medium tracking-wider">VC Assigned</th>
                     <th className="px-4 py-3 font-medium tracking-wider">Status</th>
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-border font-mono">
-                  {todayVcs.length > 0 ? todayVcs.map((vc) => (
-                    <tr
-                      key={vc.id}
-                      className={`hover:bg-background/50 transition-colors ${vc.status === 'live' ? 'bg-primary/5' : ''}`}
-                    >
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {format(new Date(vc.startTime), "HH:mm")} - {format(new Date(vc.endTime), "HH:mm")}
-                      </td>
-                      <td className="px-4 py-3 text-white font-sans font-medium line-clamp-1 max-w-[400px]" title={vc.title}>
-                        {vc.title}
-                      </td>
-                      <td className="px-4 py-3 truncate max-w-[150px]">{vc.hostStudio}</td>
-                      <td className="px-4 py-3">
-                        {vc.status === 'live' && <span className="text-primary flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> LIVE</span>}
-                        {vc.status === 'upcoming' && <span className="text-accent">UPCOMING</span>}
-                        {vc.status === 'completed' && <span className="text-muted-foreground">COMPLETED</span>}
-                      </td>
-                    </tr>
-                  )) : (
+                  {todayVcs.length > 0 ? (
+                    todayVcs.map((vc) => (
+                      <tr
+                        key={vc.vcid}   // 🔥 use id instead of vcid
+                        className={`hover:bg-background/50 transition-colors ${vc.status === "live" ? "bg-primary/5" : ""
+                          }`}
+                      >
+                        <td className="px-4 py-3 truncate max-w-[150px]">
+                          {vc.vcid}
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {format(new Date(vc.startTime), "HH:mm")} -{" "}
+                          {format(new Date(vc.endTime), "HH:mm")}
+                        </td>
+
+                        <td
+                          className="px-4 py-3 text-white font-sans font-medium truncate max-w-[350px]"
+                          title={vc.title}
+                        >
+                          {vc.title}
+                        </td>
+
+                        <td className="px-4 py-3 truncate max-w-[150px]">
+                          {vc.hostStudio}
+                        </td>
+
+                        <td className="px-4 py-3 truncate max-w-[150px]">
+                          {vc.vcAssigned}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          {vc.status === "live" && (
+                            <span className="text-primary flex items-center gap-1.5">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                              LIVE
+                            </span>
+                          )}
+                          {vc.status === "upcoming" && (
+                            <span className="text-accent">UPCOMING</span>
+                          )}
+                          {vc.status === "completed" && (
+                            <span className="text-muted-foreground">COMPLETED</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
                     <tr>
-                      <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground font-sans">
+                      <td
+                        colSpan={5}
+                        className="px-4 py-8 text-center text-muted-foreground font-sans"
+                      >
                         No scheduled VCs for today.
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+
             </div>
           </div>
 
           {/* Analytics (Span 1) */}
           <div className="col-span-1 grid gap-6 min-h-0">
             {/* Chart */}
-            <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-4">Scheduled Hours</span>
+            <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-4">Scheduled VC Hours</span> 
             <div className="flex-1 min-h-[120px]">
               <HourlyDistributionChart vcs={vcs || []} />
             </div>
